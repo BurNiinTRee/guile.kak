@@ -8,7 +8,7 @@ define-command guile-start-repl %{
         mkfifo $fifo
         printf %s\\n "set-option global guile_socket $socket"
         ( guile -q --listen=$socket ) >/dev/null 2>&1 </dev/zero &
-        printf %s\\n "set-option buffer guile_pid $!"
+        printf %s\\n "set-option global guile_pid $!"
     }
     hook -once -group guile global BufClose guile guile-stop-repl
     edit guile
@@ -19,8 +19,8 @@ define-command guile-stop-repl %{
         kill $kak_opt_guile_pid
         rm $kak_opt_guile_socket
         printf %s\\n "echo $kak_opt_guile_pid
-        set-option buffer guile_pid ''
-        set-option buffer guile_socket ''"
+        set-option global guile_pid ''
+        set-option global guile_socket ''"
     }
 }
 
