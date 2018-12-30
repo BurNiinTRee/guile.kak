@@ -4,19 +4,22 @@ declare-option -hidden str guile_pid
 define-command guile-start-repl %{
     evaluate-commands %sh{
         socket=$(mktemp -u)
-        fifo=$(mktemp -u)
-        mkfifo $fifo
         printf %s\\n "set-option global guile_socket $socket"
         ( guile -q --listen=$socket ) >/dev/null 2>&1 </dev/zero &
-        printf %s\\n "set-option global guile_pid $!"
+        pid=$!
+        printf %s\\n "set-option global guile_pid '$pid'
+            hook -once -group guile global KakEnd guile 'guile-stop-repl $pid'"
     }
-    hook -once -group guile global BufClose guile guile-stop-repl
-    edit guile
+    edit -scratch guile
 }
 
-define-command guile-stop-repl %{
+define-command -params 0..1 guile-stop-repl %{
     evaluate-commands %sh{
-        kill $kak_opt_guile_pid
+        if [[ -z $1 ]] ;then
+            kill $kak_opt_guile_pid
+        else
+            kill $1
+        fi
         rm $kak_opt_guile_socket
         printf %s\\n "echo $kak_opt_guile_pid
         set-option global guile_pid ''
@@ -28,7 +31,7 @@ define-command guile-evaluate -params 1 -docstring \
   "Evaluates the given string in the context of the current guile session" %{
     guile-write-to-buffer %sh{
         printf "$kak_selection\n" | socat - UNIX-CLIENT:$kak_opt_guile_socket | \
-            tail +9 | sed 's/\$[0-9]* = \(.*\)/\1/g'
+            tail +9 | sed 's/\$[0-9]* = \(.*\)/=> \1/g'
     }
 }
 
