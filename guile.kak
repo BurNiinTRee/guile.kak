@@ -5,7 +5,7 @@ declare-user-mode guile
 hook -group guile global WinSetOption filetype=scheme %{
     map -docstring "Evaluates the current buffer" window guile l ": guile-load-buffer<ret>"
     map -docstring "Evaluates the current selection" window guile e ": guile-evaluate-selection<ret>"
-    map -docstring "Restart the guile session" window guile e ": guile-stop-repl<ret>: guile-start-repl"
+    map -docstring "Restart the guile session" window guile r ": guile-stop-repl<ret>: guile-start-repl<ret>"
 }
 
 define-command guile-start-repl %{
@@ -50,7 +50,7 @@ define-command guile-write-to-buffer -params 1 %{
 }
 
 define-command guile-evaluate-selection %{
-    guile-evaluate %val{selection}
+    guile-evaluate "%val{selection}"
 }
 
 define-command guile-load-buffer %{
