@@ -8,7 +8,7 @@ define-command guile-start-repl %{
         ( guile -q --listen=$socket ) >/dev/null 2>&1 </dev/zero &
         pid=$!
         printf %s\\n "set-option global guile_pid '$pid'
-            hook -once -group guile global KakEnd guile 'guile-stop-repl $pid'"
+            hook -once -group guile global KakEnd .* 'guile-stop-repl $pid'"
     }
     edit -scratch guile
 }
