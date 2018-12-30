@@ -12,7 +12,7 @@ define-command guile-start-repl %{
     evaluate-commands %sh{
         socket=$(mktemp -u)
         printf %s\\n "set-option global guile_socket $socket"
-        ( guile -q --listen=$socket ) >/dev/null 2>&1 </dev/zero &
+        ( guile -q --listen=$socket -L .) >/dev/null 2>&1 </dev/zero &
         pid=$!
         printf %s\\n "set-option global guile_pid '$pid'
             hook -once -group guile global KakEnd .* 'guile-stop-repl $pid'"
@@ -44,13 +44,16 @@ define-command guile-evaluate -params 1 -docstring \
 
 define-command guile-write-to-buffer -params 1 %{
     execute-keys -buffer guile %sh{
-        sanitized_input="$(echo $1 | sed 's/</<lt>/g')"
+        # the sed command is taken from
+        # https://stackoverflow.com/questions/1251999/how-can-i-replace-a-newline-n-using-sed/1252010#1252010
+        sanitized_input="$(printf "%s" "$1" | sed 's/</<lt>/g' | \
+            sed ':a;N;$!ba;s/\n/<ret>/g')"
         printf "<esc>gjo%s<esc>" "$sanitized_input"
     }
 }
 
 define-command guile-evaluate-selection %{
-    guile-evaluate "%val{selection}"
+    guile-evaluate %val{selection}
 }
 
 define-command guile-load-buffer %{
