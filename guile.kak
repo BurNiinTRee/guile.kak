@@ -50,9 +50,7 @@ define-command guile-write-to-buffer -params 1 %{
 }
 
 define-command guile-evaluate-selection %{
-    guile-evaluate %sh{
-        printf "%s\n" "$kak_selection"
-    }
+    guile-evaluate %val{selection}
 }
 
 define-command guile-load-buffer %{
