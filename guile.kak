@@ -43,12 +43,9 @@ define-command guile-evaluate -params 1 -docstring \
 }
 
 define-command guile-write-to-buffer -params 1 %{
-    execute-keys -buffer guile %sh{
-        # the sed command is taken from
-        # https://stackoverflow.com/questions/1251999/how-can-i-replace-a-newline-n-using-sed/1252010#1252010
-        sanitized_input="$(printf "%s" "$1" | sed 's/</<lt>/g' | \
-            sed ':a;N;$!ba;s/\n/<ret>/g')"
-        printf "<esc>gjo%s<esc>" "$sanitized_input"
+    evaluate-commands -buffer guile -save-regs '"' %{
+        set-register '"' %arg(1)
+        execute-keys 'gep'
     }
 }
 
